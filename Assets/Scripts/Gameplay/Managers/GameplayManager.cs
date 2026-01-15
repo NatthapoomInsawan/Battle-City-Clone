@@ -5,39 +5,25 @@ using UnityEngine;
 public class GameplayManager : MonoBehaviour
 {
     [Header("Network")]
-    [SerializeField] private NetworkManager networkManager;
-
-    private void Awake()
-    {
-        networkManager.Server.Started.AddListener(OnServerStarted);
-        networkManager.Client.Disconnected.AddListener(OnDisconnected);
-        networkManager.Server.Disconnected.AddListener(OnClientDisconnectedOnServer);
-    }
-
+    [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
     private void Start()
     {
-        networkManager.Client.Connect("localhost");
+        Init().Forget();
     }
 
-    private void OnServerStarted()
+    private async UniTaskVoid Init()
     {
-        Debug.Log("Server has started. Initializing gameplay systems...");
-    }
-
-    private async void OnDisconnected(ClientStoppedReason arg0)
-    {
-        if (arg0.Equals(ClientStoppedReason.ConnectingTimeout))
+        try
         {
-            Debug.Log("ConnectingTimeout. start hosting server...");
-
-            await UniTask.WaitUntil(()=>!networkManager.Client.IsConnected);
-            networkManager.Server.StartServer(networkManager.Client);
+            await gameplayNetworkManager.Init();
         }
-    }
+        catch (System.Exception e)
+        {
+            Debug.LogError(e);
+            return;
+        }
 
-    private void OnClientDisconnectedOnServer(INetworkPlayer networkPlayer)
-    {
-        networkManager.ServerObjectManager.DestroyCharacter(networkPlayer);
+        Debug.Log("GameplayManager initialized.");
     }
 
 }

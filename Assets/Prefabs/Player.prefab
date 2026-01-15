@@ -203,7 +203,7 @@ MonoBehaviour:
   SyncSettings:
     From: 2
     To: 3
-    Timing: 0
+    Timing: 1
     Interval: 0.1
   ClientAuthority: 1
   LocalPositionSensitivity: 0.01
@@ -227,5 +227,6 @@ MonoBehaviour:
     Timing: 0
     Interval: 0.1
   networkIdentity: {fileID: 5249882583832113950}
-  speed: 500
   rigidbody2d: {fileID: 6695924581348857201}
+  bulletPrefab: {fileID: 660304272559420256, guid: d649305ba7153d341984fed3fb9be46a, type: 3}
+  speed: 500
