@@ -1,29 +1,62 @@
 using Cysharp.Threading.Tasks;
-using Mirage;
+using System;
 using UnityEngine;
 
-public class GameplayManager : MonoBehaviour
+namespace BattleCityClone.Gameplay.Manager
 {
-    [Header("Network")]
-    [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
-    private void Start()
+    public class GameplayManager : MonoBehaviour
     {
-        Init().Forget();
-    }
+        public event Action OnGameplayStart;
 
-    private async UniTaskVoid Init()
-    {
-        try
+        public static GameplayManager Instance { get; private set; }
+
+        public GameplayNetworkManager GameplayNetworkManager => gameplayNetworkManager;
+
+        [Header("Network")]
+        [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
+
+        private void Awake()
         {
-            await gameplayNetworkManager.Init();
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        catch (System.Exception e)
+
+        private void Start()
         {
-            Debug.LogError(e);
-            return;
+            Init().Forget();
         }
 
-        Debug.Log("GameplayManager initialized.");
-    }
+        private async UniTaskVoid Init()
+        {
+            try
+            {
+                await gameplayNetworkManager.Init();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return;
+            }
 
+            Debug.Log("GameplayManager initialized.");
+
+            await UniTask.WaitUntil(() => gameplayNetworkManager.Server.AllPlayers.Count >= 2);
+
+            if (gameplayNetworkManager.Server.IsHost)
+                StartGame();
+
+        }
+
+        private void StartGame()
+        {
+            Debug.Log("Game Started.");
+            OnGameplayStart?.Invoke();
+        }
+
+    }
 }

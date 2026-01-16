@@ -189,6 +189,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnPrefabs:
   - {fileID: 5249882583832113950, guid: bdec892cdb20caa448ab68ba01d5e4b7, type: 3}
+  - {fileID: 8396791052825547705, guid: d649305ba7153d341984fed3fb9be46a, type: 3}
   NetworkPrefabs: {fileID: 0}
 --- !u!114 &8145547132326183870
 MonoBehaviour:
