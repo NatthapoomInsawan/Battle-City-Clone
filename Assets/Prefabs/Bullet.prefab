@@ -227,4 +227,5 @@ MonoBehaviour:
     Timing: 0
     Interval: 0.1
   rigidbody2d: {fileID: 3850297640632634741}
-  speed: 500
+  speed: 550
+  lifeTimeInSeconds: 3.5

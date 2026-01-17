@@ -1,4 +1,3 @@
-using BattleCityClone.Gameplay.Manager;
 using Mirage;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -88,6 +87,16 @@ namespace BattleCityClone.Gameplay.Player
                     break;
             }
         }
+
+        private void OnDisable()
+        {
+            if (playerInputAction != null)
+            {
+                playerInputAction.Player.Movement.performed -= OnMovementPerform;
+                playerInputAction.Player.Disable();
+            }
+        }
+
     }
 
 }

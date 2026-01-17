@@ -13,9 +13,10 @@ GameObject:
   - component: {fileID: 6695924581348857201}
   - component: {fileID: 109416296782158168}
   - component: {fileID: 5249882583832113950}
-  - component: {fileID: 1325642482633133843}
   - component: {fileID: 2436993074841087357}
   - component: {fileID: 5030788615877127276}
+  - component: {fileID: 4380930421418813687}
+  - component: {fileID: 6668152780822802398}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -190,27 +191,6 @@ MonoBehaviour:
   ServerObjectManager: {fileID: 0}
   ClientObjectManager: {fileID: 0}
   _hasSpawned: 0
---- !u!114 &1325642482633133843
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 809986652626601550}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncSettings:
-    From: 2
-    To: 3
-    Timing: 1
-    Interval: 0.1
-  ClientAuthority: 1
-  LocalPositionSensitivity: 0.01
-  LocalRotationSensitivity: 0.01
-  LocalScaleSensitivity: 0.01
 --- !u!114 &2436993074841087357
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +232,45 @@ MonoBehaviour:
   networkIdentity: {fileID: 5249882583832113950}
   bulletPrefab: {fileID: 660304272559420256, guid: d649305ba7153d341984fed3fb9be46a, type: 3}
   spawnTransform: {fileID: 4302981746707952742}
+  shootCooldownInSeconds: 0.5
+--- !u!114 &4380930421418813687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809986652626601550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a216bc1766ab9c5409eedc25a7535ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncSettings:
+    From: 2
+    To: 3
+    Timing: 0
+    Interval: 0.1
+  syncRateInMilliSec: 10
+  lerpRate: 10
+--- !u!114 &6668152780822802398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 809986652626601550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1731eb94ec26f7846ab4b8d89df64f77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncSettings:
+    From: 2
+    To: 3
+    Timing: 0
+    Interval: 0.1
+  maxHealth: 100
+  currentHealth: 0
 --- !u!1 &5555776869777614246
 GameObject:
   m_ObjectHideFlags: 0
