@@ -6,25 +6,63 @@ namespace BattleCityClone.Gameplay.Player
 {
     public class PlayerStateController : NetworkBehaviour, IDamagable
     {
-        [Header("Settings")]
+        public IState CurrentState => currentState;
+
+        [Header("Player Settings")]
         [SerializeField] private int maxHealth = 100;
         [SyncVar, SerializeField] private int currentHealth;
+
+        [Header("State Settings")]
+        [SerializeField] float invincibleDuration = 3f;
+
+        [SerializeField] private IState currentState;
 
         private void Awake()
         {
             currentHealth = maxHealth;
+            SetState(new PlayerIdleState());
         }
 
         public void TakeDamage(int damageAmount)
         {
-            maxHealth -= damageAmount;
-            maxHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+            currentHealth -= damageAmount;
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+            SetState(new PlayerInvincibleState());
 
-            if (maxHealth <= 0 && IsServer)
-                DestroyPlayerRpc();
+            if (currentHealth <= 0 && IsServer)
+                DestroyPlayer();
         }
 
-        private void DestroyPlayerRpc()
+        private void SetState(IState state)
+        {
+            if (this == null)
+                return;
+
+            if (currentState != null)
+                currentState.ExitState();
+            
+            currentState = state;
+            switch (state)
+            {
+                case PlayerInvincibleState playerInvincibleState :
+                    playerInvincibleState.Init(invincibleDuration, this);
+                    playerInvincibleState.OnInvicibleEnd += () => SetState(new PlayerIdleState());
+                    break;
+            }
+
+            if (IsServer)
+                SendClientStateRpc(currentState);
+
+            currentState.EnterState();
+        }
+
+        [ClientRpc(excludeHost = true)]
+        private void SendClientStateRpc(IState newState)
+        {
+            SetState(newState);
+        }
+
+        private void DestroyPlayer()
         {
             GameplayManager.Instance.GameplayNetworkManager.ServerObjectManager.Destroy(gameObject);
         }

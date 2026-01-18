@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
 using Mirage;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,7 +14,7 @@ namespace BattleCityClone.Gameplay.Player
         Right
     }
 
-    public class PlayerMovementController : NetworkBehaviour
+    public class PlayerMovementController : NetworkBehaviour, IStaggerable
     {
         public FacingDirection FacingDirection => facingDirection;
 
@@ -25,6 +27,10 @@ namespace BattleCityClone.Gameplay.Player
         [Header("Settings")]
         [SerializeField] private float speed = 500;
         [SerializeField] private FacingDirection facingDirection = FacingDirection.Up;
+
+        private bool isKnockingBack;
+
+        private Vector2 directionVector;
 
         private PlayerInputAction playerInputAction;
 
@@ -41,11 +47,13 @@ namespace BattleCityClone.Gameplay.Player
 
         private void FixedUpdate()
         {
-            if (playerInputAction != null)
+            if (HasAuthority && playerInputAction != null && !isKnockingBack)
             {
-                var directionVector = GetSnapDirectionVector(playerInputAction.Player.Movement.ReadValue<Vector2>());
-                rigidbody2d.linearVelocity = new Vector2(directionVector.x, directionVector.y) * speed * Time.fixedDeltaTime;
+                directionVector = GetSnapDirectionVector(playerInputAction.Player.Movement.ReadValue<Vector2>());
+                rigidbody2d.linearVelocity = new Vector2(directionVector.x, directionVector.y) * speed;
             }
+
+            rigidbody2d.linearVelocity = rigidbody2d.linearVelocity * Time.fixedDeltaTime;
         }
 
         private  Vector2 GetSnapDirectionVector(Vector2 directionVector)
@@ -86,6 +94,31 @@ namespace BattleCityClone.Gameplay.Player
                     facingDirection = FacingDirection.Right;
                     break;
             }
+        }
+
+        public void Stagger(Vector2 direction, float knockbackRate, float knockbackDuration)
+        {
+            if (isKnockingBack)
+                return;
+
+            if (IsServer)
+                SendKnockBackRpc(direction, knockbackRate, knockbackDuration);
+
+            rigidbody2d.linearVelocity = direction * knockbackRate;
+            KnockBackTimeTask(knockbackDuration).Forget();
+        }
+
+        private async UniTaskVoid KnockBackTimeTask(float knockbackDuration)
+        {
+            isKnockingBack = true;
+            await UniTask.Delay(TimeSpan.FromSeconds(knockbackDuration));
+            isKnockingBack = false;
+        }
+
+        [ClientRpc(excludeHost = true)]
+        private void SendKnockBackRpc(Vector2 direction, float knockbackRate, float knockbackDuration)
+        {
+            Stagger(direction, knockbackRate, knockbackDuration);
         }
 
         private void OnDisable()

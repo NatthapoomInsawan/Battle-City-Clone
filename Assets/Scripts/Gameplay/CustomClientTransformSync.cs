@@ -13,14 +13,13 @@ namespace BattleCityClone.Gameplay
 
         [SyncVar(hook = nameof(OnPositionChange))] private Vector3 syncPosition;
         [SyncVar(hook = nameof(OnRotationChange))] private Quaternion syncRotation;
-
+        
         private float lerpTimer = 0f;
 
         private void Start()
         {
             syncPosition = transform.position;
             syncRotation =  transform.rotation;
-
 
             if (!Server)
                 SendUpdates().Forget();
@@ -48,10 +47,7 @@ namespace BattleCityClone.Gameplay
             lerpTimer = 0;
         }
 
-        private void OnRotationChange(Quaternion rotation)
-        {
-            syncRotation = rotation;
-        }
+        private void OnRotationChange(Quaternion rotation) => syncRotation = rotation;
 
         private async UniTaskVoid SendUpdates()
         {
