@@ -19,11 +19,11 @@ namespace BattleCityClone.Gameplay
         [SerializeField] private float bulletSpeed = 500f;
         [SerializeField] private float lifeTimeInSeconds = 3.5f;
 
-        private Transform ignoreCollisionTransform;
+        [SyncVar] private uint ownerId;
 
-        public void Init(Transform ignoreCollisionTransform)
+        public void Init(uint ownerId)
         {
-            this.ignoreCollisionTransform = ignoreCollisionTransform;
+            this.ownerId = ownerId;
         }
 
         private async void Awake()
@@ -40,15 +40,17 @@ namespace BattleCityClone.Gameplay
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.transform == ignoreCollisionTransform)
-                return;
+            if (collision.TryGetComponent<NetworkIdentity>(out var collideIdentity))
+            {
+                if (collideIdentity.NetId == ownerId)
+                    return;
+            }
             
-            PlayerStateController playerStateController = collision.gameObject.GetComponent<PlayerStateController>();
-            if (playerStateController == null)
-                return;
-            if (playerStateController.CurrentState is PlayerInvincibleState)
-                return;
-
+            if (collision.TryGetComponent<PlayerStateController>(out var playerStateController))
+            {
+                if (playerStateController.CurrentState is PlayerInvincibleState)
+                    return;
+            }
 
             IDamagable damagable = collision.GetComponent<IDamagable>();
             IStaggerable staggerable = collision.GetComponent<IStaggerable>();

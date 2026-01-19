@@ -42,7 +42,7 @@ namespace BattleCityClone.Gameplay.Player
 
             canShoot = false;
 
-            SpawnShootBulletRpc();
+            SpawnShootBulletRpc(NetId);
 
             await UniTask.Delay(System.TimeSpan.FromSeconds(shootCooldownInSeconds));
 
@@ -50,10 +50,11 @@ namespace BattleCityClone.Gameplay.Player
         }
 
         [ServerRpc]
-        private void SpawnShootBulletRpc()
+        private void SpawnShootBulletRpc(uint netId)
         {
             Bullet bullet = Instantiate(bulletPrefab, spawnTransform.position, transform.rotation);
-            bullet.Init(transform);
+            bullet.Init(netId);
+            
             GameplayManager.Instance.GameplayNetworkManager.ServerObjectManager.Spawn(bullet.gameObject);
         }
 
