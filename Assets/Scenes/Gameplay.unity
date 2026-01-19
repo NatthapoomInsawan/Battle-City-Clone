@@ -431,6 +431,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Gameplay Manager
       objectReference: {fileID: 0}
+    - target: {fileID: 3031137786688298351, guid: 2fa43824bf87cbb4498d48394994fda1, type: 3}
+      propertyPath: _sceneId
+      value: 3164506408
+      objectReference: {fileID: 0}
     - target: {fileID: 6228204481519139493, guid: 2fa43824bf87cbb4498d48394994fda1, type: 3}
       propertyPath: m_LocalPosition.x
       value: 211

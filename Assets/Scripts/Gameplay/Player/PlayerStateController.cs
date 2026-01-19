@@ -6,7 +6,7 @@ namespace BattleCityClone.Gameplay.Player
 {
     public class PlayerStateController : NetworkBehaviour, IDamagable
     {
-        public IState CurrentState => currentState;
+        public PlayerState CurrentState => currentState;
 
         [Header("Player Settings")]
         [SerializeField] private int maxHealth = 100;
@@ -15,7 +15,7 @@ namespace BattleCityClone.Gameplay.Player
         [Header("State Settings")]
         [SerializeField] float invincibleDuration = 3f;
 
-        [SerializeField] private IState currentState;
+        [SerializeReference] private PlayerState currentState;
 
         private void Awake()
         {
@@ -33,31 +33,47 @@ namespace BattleCityClone.Gameplay.Player
                 DestroyPlayer();
         }
 
-        private void SetState(IState state)
+        private void SetState(PlayerState state)
         {
             if (this == null)
                 return;
 
             if (currentState != null)
                 currentState.ExitState();
-            
+
             currentState = state;
-            switch (state)
-            {
-                case PlayerInvincibleState playerInvincibleState :
-                    playerInvincibleState.Init(invincibleDuration, this);
-                    playerInvincibleState.OnInvicibleEnd += () => SetState(new PlayerIdleState());
-                    break;
-            }
+
+            InitPlayerState(currentState);
 
             if (IsServer)
                 SendClientStateRpc(currentState);
 
             currentState.EnterState();
+            
+            if (currentState.GetNextState() != null)
+            {
+                currentState.OnExitState += () =>
+                {
+                    PlayerState nextState = currentState.GetNextState();
+                    currentState = null;
+                    SetState(nextState);
+                };
+            }
+                
+        }
+
+        private void InitPlayerState(PlayerState state)
+        {
+            switch (state)
+            {
+                case PlayerInvincibleState playerInvincibleState:
+                    playerInvincibleState.Init(invincibleDuration, this);
+                    break;
+            }
         }
 
         [ClientRpc(excludeHost = true)]
-        private void SendClientStateRpc(IState newState)
+        private void SendClientStateRpc(PlayerState newState)
         {
             SetState(newState);
         }

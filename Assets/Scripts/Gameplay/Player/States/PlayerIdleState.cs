@@ -2,16 +2,13 @@ using System;
 
 namespace BattleCityClone.Gameplay.Player
 {
-    public class PlayerIdleState : IState
+    [Serializable]
+    public class PlayerIdleState : PlayerState
     {
-        public void EnterState()
-        {
+        public override void EnterState() { }
 
-        }
+        public override void ExitState() { }
 
-        public void ExitState()
-        {
-
-        }
+        public override PlayerState GetNextState() { return null; }
     }
 }

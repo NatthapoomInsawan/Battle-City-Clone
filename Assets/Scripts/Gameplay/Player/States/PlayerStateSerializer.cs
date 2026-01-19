@@ -8,7 +8,7 @@ namespace BattleCityClone.Gameplay.Player
         const byte IDLE = 1;
         const byte INVINCIBLE = 2;
 
-        public static void WriteItem(this NetworkWriter writer, IState state)
+        public static void WriteItem(this NetworkWriter writer, PlayerState state)
         {
             switch (state)
             {
@@ -21,7 +21,7 @@ namespace BattleCityClone.Gameplay.Player
             }
         }
 
-        public static IState ReadItem(this NetworkReader reader)
+        public static PlayerState ReadItem(this NetworkReader reader)
         {
             byte type = reader.ReadByte();
             switch (type)

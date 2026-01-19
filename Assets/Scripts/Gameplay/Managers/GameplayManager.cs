@@ -14,6 +14,7 @@ namespace BattleCityClone.Gameplay.Manager
 
         [Header("Network")]
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
+        [SerializeField] private GameplayStateManager gameplayStateManager;
 
         private void Awake()
         {
@@ -36,6 +37,7 @@ namespace BattleCityClone.Gameplay.Manager
             try
             {
                 await gameplayNetworkManager.Init();
+                gameplayStateManager.Init();
             }
             catch (Exception e)
             {
@@ -54,7 +56,7 @@ namespace BattleCityClone.Gameplay.Manager
 
         private void StartGame()
         {
-            Debug.Log("Game Started.");
+            gameplayStateManager.SetState(new GameplayStartedState());
             OnGameplayStart?.Invoke();
         }
 

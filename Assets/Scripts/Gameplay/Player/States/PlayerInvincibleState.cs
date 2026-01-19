@@ -5,10 +5,9 @@ using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Player
 {
-    public class PlayerInvincibleState : IState
+    [Serializable]
+    public class PlayerInvincibleState : PlayerState
     {
-        public event Action OnInvicibleEnd;
-
         public PlayerStateController PlayerStateController => PlayerStateController;
         public float StateDuration => stateDuration;
 
@@ -26,14 +25,14 @@ namespace BattleCityClone.Gameplay.Player
         }
 
 
-        public void EnterState()
+        public override void EnterState()
         {
             //for testing
             stateController.gameObject.GetComponent<SpriteRenderer>().color = Color.blue;
             DurationTask(cancellationTokenSource.Token).Forget();
         }
 
-        public void ExitState()
+        public override void ExitState()
         {
             cancellationTokenSource.Cancel();
             
@@ -42,14 +41,19 @@ namespace BattleCityClone.Gameplay.Player
                 return;
 
             stateController.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            base.ExitState();
         }
 
         private async UniTaskVoid DurationTask(CancellationToken cancellationToken)
         {
             if (await UniTask.Delay(TimeSpan.FromSeconds(stateDuration),  cancellationToken: cancellationToken).SuppressCancellationThrow())
                 return;
-            OnInvicibleEnd?.Invoke();
             ExitState();
+        }
+
+        public override PlayerState GetNextState()
+        {
+            return new PlayerIdleState();
         }
     }
 }
