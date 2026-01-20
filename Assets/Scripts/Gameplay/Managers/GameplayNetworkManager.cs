@@ -10,7 +10,6 @@ namespace BattleCityClone.Gameplay.Manager
         [SerializeField] private string address = "localhost";
         [SerializeField] private ushort port = 7777;
 
-        private bool isInit;
         private void Awake()
         {
             Server.Started.AddListener(OnServerStarted);
@@ -23,16 +22,11 @@ namespace BattleCityClone.Gameplay.Manager
 
             if (await UniTask.WaitUntil(() => Client.IsConnected).SuppressCancellationThrow())
                 return;
-
-            if (await UniTask.WaitUntil(() => isInit).SuppressCancellationThrow())
-                return;
         }
-
 
         private void OnServerStarted()
         {
             Debug.Log("Server has started..");
-            isInit = true;
         }
 
         private async void OnDisconnected(ClientStoppedReason arg0)

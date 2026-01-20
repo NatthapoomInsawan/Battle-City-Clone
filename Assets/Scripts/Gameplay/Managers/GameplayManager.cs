@@ -6,11 +6,10 @@ namespace BattleCityClone.Gameplay.Manager
 {
     public class GameplayManager : MonoBehaviour
     {
-        public event Action OnGameplayStart;
-
         public static GameplayManager Instance { get; private set; }
 
         public GameplayNetworkManager GameplayNetworkManager => gameplayNetworkManager;
+        public GameplayStateManager GameplayStateManager => gameplayStateManager;
 
         [Header("Network")]
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
@@ -20,6 +19,8 @@ namespace BattleCityClone.Gameplay.Manager
         {
             if (Instance != null && Instance != this)
             {
+                Debug.Log("Destroy");
+
                 Destroy(gameObject);
                 return;
             }
@@ -29,6 +30,7 @@ namespace BattleCityClone.Gameplay.Manager
 
         private void Start()
         {
+            Debug.Log("Game Manager Init");
             Init().Forget();
         }
 
@@ -36,8 +38,8 @@ namespace BattleCityClone.Gameplay.Manager
         {
             try
             {
-                await gameplayNetworkManager.Init();
                 gameplayStateManager.Init();
+                await gameplayNetworkManager.Init();
             }
             catch (Exception e)
             {
@@ -47,17 +49,16 @@ namespace BattleCityClone.Gameplay.Manager
 
             Debug.Log("GameplayManager initialized.");
 
-            await UniTask.WaitUntil(() => gameplayNetworkManager.Server.AllPlayers.Count >= 2);
-
             if (gameplayNetworkManager.Server.IsHost)
-                StartGame();
-
+                gameplayNetworkManager.Server.Connected.AddListener((con) =>{
+                    if (gameplayNetworkManager.Server.AllPlayers.Count >= 2)
+                        StartGame();
+                });     
         }
 
         private void StartGame()
         {
             gameplayStateManager.SetState(new GameplayStartedState());
-            OnGameplayStart?.Invoke();
         }
 
     }

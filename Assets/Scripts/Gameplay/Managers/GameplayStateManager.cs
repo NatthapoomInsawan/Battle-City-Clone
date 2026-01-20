@@ -1,13 +1,15 @@
-using BattleCityClone.Gameplay.Player;
-using Cysharp.Threading.Tasks;
 using Mirage;
+using System;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay
 {
     public class GameplayStateManager : NetworkBehaviour
     {
-        [SyncVar, SerializeReference] private GameplayState currentState;
+        public GameplayState CurrentState => currentState;
+        public event Action<GameplayState> OnStateChanged;
+
+        [SerializeReference] private GameplayState currentState;
 
         public void Init() 
         {
@@ -28,6 +30,7 @@ namespace BattleCityClone.Gameplay
                 SendClientStateRpc(currentState);
 
             currentState.EnterState();
+            OnStateChanged?.Invoke(currentState);
         }
 
         [ClientRpc(excludeHost = true)]
