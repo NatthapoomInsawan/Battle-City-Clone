@@ -6,13 +6,18 @@ namespace BattleCityClone.Gameplay.Manager
 {
     public class GameplayNetworkManager : NetworkManager
     {
+        public int PlayerReady => playerReady;
+
         [Header("Nerwork Settings")]
         [SerializeField] private string address = "localhost";
         [SerializeField] private ushort port = 7777;
 
+        private int playerReady = 0;
+
         private void Awake()
         {
             Server.Started.AddListener(OnServerStarted);
+            Server.Authenticated.AddListener(OnAuthenticated);
             Client.Disconnected.AddListener(OnDisconnected);
         }
 
@@ -27,6 +32,13 @@ namespace BattleCityClone.Gameplay.Manager
         private void OnServerStarted()
         {
             Debug.Log("Server has started..");
+        }
+
+        private async void OnAuthenticated(INetworkPlayer player)
+        {
+            await UniTask.WaitUntil(()=>player.SceneIsReady);
+
+            playerReady++;
         }
 
         private async void OnDisconnected(ClientStoppedReason arg0)

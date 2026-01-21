@@ -15,6 +15,9 @@ namespace BattleCityClone.Gameplay.Manager
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
         [SerializeField] private GameplayStateManager gameplayStateManager;
 
+        [Header("Max Player")]
+        [SerializeField] private int maxPlayers = 2;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -50,10 +53,10 @@ namespace BattleCityClone.Gameplay.Manager
             Debug.Log("GameplayManager initialized.");
 
             if (gameplayNetworkManager.Server.IsHost)
-                gameplayNetworkManager.Server.Connected.AddListener((con) =>{
-                    if (gameplayNetworkManager.Server.AllPlayers.Count >= 2)
-                        StartGame();
-                });     
+            {
+                await UniTask.WaitUntil(()=> gameplayNetworkManager.PlayerReady == maxPlayers);
+                StartGame();
+            }    
         }
 
         private void StartGame()
