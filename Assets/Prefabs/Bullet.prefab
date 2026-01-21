@@ -227,7 +227,7 @@ MonoBehaviour:
     Timing: 0
     Interval: 0.1
   rigidbody2d: {fileID: 3850297640632634741}
-  damage: 10
+  damage: 25
   knockbackRate: 800
   knockbackDuration: 1
   bulletSpeed: 500

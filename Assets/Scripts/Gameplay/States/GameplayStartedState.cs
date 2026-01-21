@@ -1,15 +1,24 @@
+using BattleCityClone.Gameplay.Manager;
+using BattleCityClone.Gameplay.Player;
+using Cysharp.Threading.Tasks;
 using System;
-using UnityEngine;
+using System.Linq;
 
 namespace BattleCityClone.Gameplay
 {
     [Serializable]
     public class GameplayStartedState : GameplayState
     {
-        public override void EnterState()
+        public override async void EnterState()
         {
-            Debug.Log("Game Started.");
+            foreach (var player in GameplayManager.Instance.GameplayNetworkManager.Server.AllPlayers)
+                player.Identity.gameObject.GetComponent<PlayerStateController>().Init();
+
+            await UniTask.WaitUntil(() => GameplayManager.Instance.GameplayNetworkManager.Server.AllPlayers.Count(player => player.Identity.gameObject.activeSelf) == 1);
+
+            ExitState();
         }
-        public override void ExitState() { }
+
+        public override GameplayState GetNextState() => new GameplayOverState();
     }
 }

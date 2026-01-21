@@ -1,3 +1,4 @@
+using BattleCityClone.Gameplay.Manager;
 using Cysharp.Threading.Tasks;
 using Mirage;
 using System;
@@ -20,10 +21,11 @@ namespace BattleCityClone.Gameplay.Player
 
         [Header("Network")]
         [SerializeField] private NetworkIdentity networkIdentity;
+        [SerializeField] private PlayerStateController playerStateController;
 
         [Header("References")]
         [SerializeField] private Rigidbody2D rigidbody2d;
-
+        
         [Header("Settings")]
         [SerializeField] private float speed = 500;
         [SerializeField] private FacingDirection facingDirection = FacingDirection.Up;
@@ -36,13 +38,30 @@ namespace BattleCityClone.Gameplay.Player
 
         private void Awake()
         {
+            playerInputAction = new PlayerInputAction();
+
             networkIdentity.OnStartLocalPlayer.AddListener(() =>
             {
-                playerInputAction = new PlayerInputAction();
-                playerInputAction.Enable();
-
                 playerInputAction.Player.Movement.performed += OnMovementPerform;
+                playerStateController.OnPlayerStateChanged += SetInputActiveByState;
             });
+
+            GameplayManager.Instance.GameplayStateManager.OnStateChanged += (gameState) =>
+            {
+                if (gameState is GameplayStartedState)
+                    SetInputActiveByState(playerStateController.CurrentState);
+                else
+                    playerInputAction.Disable();
+            };
+
+        }
+
+        private void SetInputActiveByState(PlayerState playerState)
+        {
+            if (playerState is PlayerDeadState)
+                playerInputAction.Disable();
+            else
+                playerInputAction.Enable();
         }
 
         private void FixedUpdate()

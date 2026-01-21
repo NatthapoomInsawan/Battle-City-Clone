@@ -6,13 +6,13 @@ namespace BattleCityClone.Gameplay.Manager
 {
     public class GameplayNetworkManager : NetworkManager
     {
-        public int PlayerReady => playerReady;
+        public int AuthenticatedPlayer => authenticatedPlayer;
 
         [Header("Nerwork Settings")]
         [SerializeField] private string address = "localhost";
         [SerializeField] private ushort port = 7777;
 
-        private int playerReady = 0;
+        private int authenticatedPlayer = 0;
 
         private void Awake()
         {
@@ -38,7 +38,7 @@ namespace BattleCityClone.Gameplay.Manager
         {
             await UniTask.WaitUntil(()=>player.SceneIsReady);
 
-            playerReady++;
+            authenticatedPlayer++;
         }
 
         private async void OnDisconnected(ClientStoppedReason arg0)

@@ -10,6 +10,7 @@ namespace BattleCityClone.Gameplay.Player
     {
         [Header("Network")]
         [SerializeField] private NetworkIdentity networkIdentity;
+        [SerializeField] private PlayerStateController playerStateController;
 
         [Header("Prefabs")]
         [SerializeField] private Bullet bulletPrefab;
@@ -26,13 +27,28 @@ namespace BattleCityClone.Gameplay.Player
 
         private void Awake()
         {
+            playerInputAction = new PlayerInputAction();
             networkIdentity.OnStartLocalPlayer.AddListener(() =>
             {
-                playerInputAction = new PlayerInputAction();
-                playerInputAction.Player.Enable();
-
                 playerInputAction.Player.Shooting.performed += OnShootButton;
             });
+
+            GameplayManager.Instance.GameplayStateManager.OnStateChanged += (gameState) =>
+            {
+                if (gameState is GameplayStartedState)
+                    SetInputActiveByState(playerStateController.CurrentState);
+                else
+                    playerInputAction.Disable();
+            };
+
+        }
+
+        private void SetInputActiveByState(PlayerState playerState)
+        {
+            if (playerState is PlayerDeadState)
+                playerInputAction.Disable();
+            else
+                playerInputAction.Enable();
         }
 
         private async void OnShootButton(InputAction.CallbackContext callBack) 

@@ -7,6 +7,7 @@ namespace BattleCityClone.Gameplay.Player
     {
         const byte IDLE = 1;
         const byte INVINCIBLE = 2;
+        const byte DEAD = 3;
 
         public static void WriteItem(this NetworkWriter writer, PlayerState state)
         {
@@ -17,6 +18,9 @@ namespace BattleCityClone.Gameplay.Player
                     break;
                 case PlayerInvincibleState playerInvincibleState:
                     writer.WriteByte(INVINCIBLE);
+                    break;
+                case PlayerDeadState playerDeadState:
+                    writer.WriteByte(DEAD);
                     break;
             }
         }
@@ -30,6 +34,8 @@ namespace BattleCityClone.Gameplay.Player
                     return new PlayerIdleState();
                 case INVINCIBLE:
                     return new PlayerInvincibleState();
+                case DEAD:
+                    return new PlayerDeadState();
                 default:
                     throw new Exception($"Invalid state type {type}");
             }

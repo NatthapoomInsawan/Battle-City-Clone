@@ -7,6 +7,7 @@ namespace BattleCityClone.Gameplay
     {
         const byte WAIT_FOR_PLAYER = 1;
         const byte GAME_STARTED = 2;
+        const byte GAME_OVER = 3;
 
         public static void WriteItem(this NetworkWriter writer, GameplayState state)
         {
@@ -17,6 +18,9 @@ namespace BattleCityClone.Gameplay
                     break;
                 case GameplayStartedState startedState:
                     writer.WriteByte(GAME_STARTED);
+                    break;
+                case GameplayOverState gameOverState:
+                    writer.WriteByte(GAME_OVER);
                     break;
             }
         }
@@ -30,6 +34,8 @@ namespace BattleCityClone.Gameplay
                     return new GameplayWaitForPlayerState();
                 case GAME_STARTED:  
                     return new GameplayStartedState();
+                case GAME_OVER:
+                    return new GameplayOverState();
                 default:
                     throw new Exception($"Invalid state type {type}");
             }

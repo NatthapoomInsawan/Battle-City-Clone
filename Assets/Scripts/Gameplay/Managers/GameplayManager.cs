@@ -1,10 +1,11 @@
 using Cysharp.Threading.Tasks;
+using Mirage;
 using System;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
 {
-    public class GameplayManager : MonoBehaviour
+    public class GameplayManager : NetworkBehaviour
     {
         public static GameplayManager Instance { get; private set; }
 
@@ -15,15 +16,16 @@ namespace BattleCityClone.Gameplay.Manager
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
         [SerializeField] private GameplayStateManager gameplayStateManager;
 
-        [Header("Max Player")]
+        [Header("Settings")]
         [SerializeField] private int maxPlayers = 2;
+
+        [Header("States")]
+        [SerializeField] private int requestRestartPlayer = 0;
 
         private void Awake()
         {
             if (Instance != null && Instance != this)
             {
-                Debug.Log("Destroy");
-
                 Destroy(gameObject);
                 return;
             }
@@ -54,15 +56,40 @@ namespace BattleCityClone.Gameplay.Manager
 
             if (gameplayNetworkManager.Server.IsHost)
             {
-                await UniTask.WaitUntil(()=> gameplayNetworkManager.PlayerReady == maxPlayers);
-                StartGame();
+                await UniTask.WaitUntil(()=> gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
+                StartGame().Forget();
             }    
         }
 
-        private void StartGame()
+        private async UniTaskVoid StartGame()
         {
             gameplayStateManager.SetState(new GameplayStartedState());
+
+            await UniTask.WaitUntil(() => gameplayStateManager.CurrentState is GameplayOverState && requestRestartPlayer == maxPlayers);
+
+            requestRestartPlayer = 0;
+
+            StartGame().Forget();
         }
+
+        public void RequestRestartGame()
+        {
+            if (Identity.HasAuthority && IsClient)
+                RequestRestartGameRpc();
+        }
+
+        public void RequestCancelRestartGame()
+        {
+            if (Identity.HasAuthority && IsClient)
+                RequestCancelStartGameRpc();
+        }
+
+
+        [ServerRpc]
+        private void RequestRestartGameRpc() => requestRestartPlayer++;
+
+        [ServerRpc]
+        private void RequestCancelStartGameRpc() => requestRestartPlayer--;
 
     }
 }

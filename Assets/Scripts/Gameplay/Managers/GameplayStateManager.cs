@@ -30,6 +30,17 @@ namespace BattleCityClone.Gameplay
                 SendClientStateRpc(currentState);
 
             currentState.EnterState();
+
+            if (currentState.GetNextState() != null)
+            {
+                currentState.OnExitState += () =>
+                {
+                    GameplayState nextState = currentState.GetNextState();
+                    currentState = null;
+                    SetState(nextState);
+                };
+            }
+
             OnStateChanged?.Invoke(currentState);
         }
 

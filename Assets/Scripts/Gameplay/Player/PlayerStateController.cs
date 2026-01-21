@@ -1,11 +1,13 @@
 using BattleCityClone.Gameplay.Manager;
 using Mirage;
+using System;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Player
 {
     public class PlayerStateController : NetworkBehaviour, IDamagable
     {
+        public event Action<PlayerState> OnPlayerStateChanged;
         public PlayerState CurrentState => currentState;
 
         [Header("Player Settings")]
@@ -17,10 +19,11 @@ namespace BattleCityClone.Gameplay.Player
 
         [SerializeReference] private PlayerState currentState;
 
-        private void Awake()
+        public void Init()
         {
             currentHealth = maxHealth;
             SetState(new PlayerIdleState());
+            gameObject.SetActive(true);
         }
 
         public void TakeDamage(int damageAmount)
@@ -30,7 +33,7 @@ namespace BattleCityClone.Gameplay.Player
             SetState(new PlayerInvincibleState());
 
             if (currentHealth <= 0 && IsServer)
-                DestroyPlayer();
+                SetState(new PlayerDeadState());
         }
 
         private void SetState(PlayerState state)
@@ -59,7 +62,8 @@ namespace BattleCityClone.Gameplay.Player
                     SetState(nextState);
                 };
             }
-                
+
+            OnPlayerStateChanged?.Invoke(currentState);
         }
 
         private void InitPlayerState(PlayerState state)
@@ -69,6 +73,9 @@ namespace BattleCityClone.Gameplay.Player
                 case PlayerInvincibleState playerInvincibleState:
                     playerInvincibleState.Init(invincibleDuration, this);
                     break;
+                case PlayerDeadState playerDeadState:
+                    playerDeadState.Init(gameObject);
+                    break;
             }
         }
 
@@ -77,11 +84,5 @@ namespace BattleCityClone.Gameplay.Player
         {
             SetState(newState);
         }
-
-        private void DestroyPlayer()
-        {
-            GameplayManager.Instance.GameplayNetworkManager.ServerObjectManager.Destroy(gameObject);
-        }
-
     }
 }

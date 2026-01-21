@@ -11,5 +11,7 @@ namespace BattleCityClone.Gameplay
             Debug.Log($"Waiting for player");
         }
         public override void ExitState() { }
+
+        public override GameplayState GetNextState() => new GameplayStartedState();
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6228204481519139493}
   - component: {fileID: 8088127278328527984}
+  - component: {fileID: 3969326634479864813}
   m_Layer: 0
   m_Name: Gameplay Manager
   m_TagString: Untagged
@@ -45,8 +46,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32e1dbec094d4364893d8e0571c2e54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SyncSettings:
+    From: 2
+    To: 3
+    Timing: 0
+    Interval: 0.1
   gameplayNetworkManager: {fileID: 0}
   gameplayStateManager: {fileID: 1007335422401216826}
+  maxPlayers: 2
+  requestRestartPlayer: 0
+--- !u!114 &3969326634479864813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2169172687291945342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SpawnSettings:
+    SendPosition: 0
+    SendRotation: 0
+    SendScale: 0
+    SendName: 0
+    SendActive: 2
+  _sceneId: 0
+  _prefabHash: 1884992075
+  ServerObjectManager: {fileID: 0}
+  ClientObjectManager: {fileID: 0}
+  _hasSpawned: 0
 --- !u!1001 &2182814967581931592
 PrefabInstance:
   m_ObjectHideFlags: 0
