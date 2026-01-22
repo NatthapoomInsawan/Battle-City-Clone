@@ -143,10 +143,7 @@ namespace BattleCityClone.Gameplay.Player
         private void OnDisable()
         {
             if (playerInputAction != null)
-            {
-                playerInputAction.Player.Movement.performed -= OnMovementPerform;
                 playerInputAction.Player.Disable();
-            }
         }
 
     }

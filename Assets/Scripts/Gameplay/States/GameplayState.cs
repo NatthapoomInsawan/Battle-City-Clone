@@ -1,4 +1,3 @@
-using BattleCityClone.Gameplay.Player;
 using System;
 
 namespace BattleCityClone.Gameplay

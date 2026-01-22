@@ -1,11 +1,16 @@
 using BattleCityClone.Gameplay;
 using BattleCityClone.Gameplay.Manager;
+using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace BattleCityClone.UI
 {
     public class GameOverPanel : BaseUI
     {
+        [Header("References")]
+        [SerializeField] private TextMeshProUGUI stateText;
+
         private PlayerInputAction playerInputAction;
 
         private bool isReady;
@@ -18,6 +23,8 @@ namespace BattleCityClone.UI
             
             playerInputAction.UI.Confirm.performed += OnConfirmButton;
             playerInputAction.UI.Cancel.performed += OnCancelButton;
+
+            UpdateStateText();
         }
 
         private void UIStateCheck(GameplayState currentGameState)
@@ -31,7 +38,15 @@ namespace BattleCityClone.UI
         public override void Open()
         {
             playerInputAction.Enable();
+            isReady = false;
+            UpdateStateText();
             base.Open();
+        }
+
+        public override void Close()
+        {
+            playerInputAction.Disable();
+            base.Close();
         }
 
         private void OnConfirmButton(InputAction.CallbackContext callBack)
@@ -40,6 +55,8 @@ namespace BattleCityClone.UI
                 return;
 
             GameplayManager.Instance.RequestRestartGame();
+            isReady = true;
+            UpdateStateText();
         }
 
         private void OnCancelButton(InputAction.CallbackContext callBack)
@@ -48,6 +65,14 @@ namespace BattleCityClone.UI
                 return;
 
             GameplayManager.Instance.RequestCancelRestartGame();
+            isReady = false;
+            UpdateStateText();
+        }
+
+        private void UpdateStateText()
+        {
+            stateText.text = isReady ? "READY" : "NOT READY";
+            stateText.color = isReady ? Color.green : Color.red;
         }
 
     }

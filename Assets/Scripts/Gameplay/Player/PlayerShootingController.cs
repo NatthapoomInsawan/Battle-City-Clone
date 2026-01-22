@@ -30,6 +30,7 @@ namespace BattleCityClone.Gameplay.Player
             playerInputAction = new PlayerInputAction();
             networkIdentity.OnStartLocalPlayer.AddListener(() =>
             {
+                playerStateController.OnPlayerStateChanged += SetInputActiveByState;
                 playerInputAction.Player.Shooting.performed += OnShootButton;
             });
 
@@ -77,10 +78,7 @@ namespace BattleCityClone.Gameplay.Player
         private void OnDisable()
         {
             if (playerInputAction != null)
-            {
-                playerInputAction.Player.Shooting.performed -= OnShootButton;
                 playerInputAction.Player.Disable();
-            }
         }
 
     }

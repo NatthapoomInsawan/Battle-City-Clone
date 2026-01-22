@@ -6,6 +6,8 @@ namespace BattleCityClone.Gameplay.Manager
 {
     public class GameplayNetworkManager : NetworkManager
     {
+        public INetworkPlayer LocalPlayer => localPlayer;
+
         public int AuthenticatedPlayer => authenticatedPlayer;
 
         [Header("Nerwork Settings")]
@@ -14,10 +16,13 @@ namespace BattleCityClone.Gameplay.Manager
 
         private int authenticatedPlayer = 0;
 
+        private INetworkPlayer localPlayer;
+
         private void Awake()
         {
             Server.Started.AddListener(OnServerStarted);
             Server.Authenticated.AddListener(OnAuthenticated);
+            Client.Connected.AddListener(OnConnected);
             Client.Disconnected.AddListener(OnDisconnected);
         }
 
@@ -40,6 +45,8 @@ namespace BattleCityClone.Gameplay.Manager
 
             authenticatedPlayer++;
         }
+
+        private void OnConnected(INetworkPlayer networkPlayer) => localPlayer = networkPlayer;
 
         private async void OnDisconnected(ClientStoppedReason arg0)
         {

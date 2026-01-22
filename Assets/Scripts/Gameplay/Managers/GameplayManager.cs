@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Mirage;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
@@ -20,7 +21,7 @@ namespace BattleCityClone.Gameplay.Manager
         [SerializeField] private int maxPlayers = 2;
 
         [Header("States")]
-        [SerializeField] private int requestRestartPlayer = 0;
+        [SerializeField] private List<uint> readyPlayerIds = new();
 
         private void Awake()
         {
@@ -56,40 +57,65 @@ namespace BattleCityClone.Gameplay.Manager
 
             if (gameplayNetworkManager.Server.IsHost)
             {
-                await UniTask.WaitUntil(()=> gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
+                await UniTask.WaitUntil(() => gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
                 StartGame().Forget();
-            }    
+            }
         }
 
         private async UniTaskVoid StartGame()
         {
+            readyPlayerIds.Clear();
             gameplayStateManager.SetState(new GameplayStartedState());
 
-            await UniTask.WaitUntil(() => gameplayStateManager.CurrentState is GameplayOverState && requestRestartPlayer == maxPlayers);
-
-            requestRestartPlayer = 0;
-
+            await UniTask.WaitUntil(() => gameplayStateManager.CurrentState is GameplayOverState && readyPlayerIds.Count == maxPlayers);
+            
             StartGame().Forget();
         }
 
         public void RequestRestartGame()
         {
-            if (Identity.HasAuthority && IsClient)
-                RequestRestartGameRpc();
+            if (!IsServer)
+                RequestRestartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+            else
+            {
+                if (readyPlayerIds.Contains(gameplayNetworkManager.LocalPlayer.Identity.NetId))
+                    return;
+                else
+                    readyPlayerIds.Add(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+            }
         }
 
         public void RequestCancelRestartGame()
         {
-            if (Identity.HasAuthority && IsClient)
-                RequestCancelStartGameRpc();
+
+            if (!IsServer)
+                RequestCancelStartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+            else
+            {
+                if (!readyPlayerIds.Contains(gameplayNetworkManager.LocalPlayer.Identity.NetId))
+                    return;
+                else
+                    readyPlayerIds.Remove(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+            }
         }
 
 
         [ServerRpc]
-        private void RequestRestartGameRpc() => requestRestartPlayer++;
+        private void RequestRestartGameRpc(uint netId)
+        {
+            if (readyPlayerIds.Contains(netId))
+                return;
+            else
+                readyPlayerIds.Add(netId);
+        }
 
         [ServerRpc]
-        private void RequestCancelStartGameRpc() => requestRestartPlayer--;
-
+        private void RequestCancelStartGameRpc(uint netId)
+        {
+            if (!readyPlayerIds.Contains(netId))
+                return;
+            else
+                readyPlayerIds.Add(netId);
+        }
     }
 }

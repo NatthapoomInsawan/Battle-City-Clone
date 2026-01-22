@@ -19,11 +19,19 @@ namespace BattleCityClone.Gameplay.Player
 
         [SerializeReference] private PlayerState currentState;
 
+        private void Start()
+        {
+            if (!IsServer)
+                RequestAuthorityForLocalManagerRpc(GameplayManager.Instance.Identity, Identity.Client.Player);
+        }
+
         public void Init()
         {
-            currentHealth = maxHealth;
-            SetState(new PlayerIdleState());
-            gameObject.SetActive(true);
+            if (IsServer)
+            {
+                InitPlayerRpc();
+                SetState(new PlayerIdleState());
+            }
         }
 
         public void TakeDamage(int damageAmount)
@@ -83,6 +91,19 @@ namespace BattleCityClone.Gameplay.Player
         private void SendClientStateRpc(PlayerState newState)
         {
             SetState(newState);
+        }
+
+        [ClientRpc]
+        private void InitPlayerRpc()
+        {
+            currentHealth = maxHealth;
+            gameObject.SetActive(true);
+        }
+
+        [ServerRpc]
+        private void RequestAuthorityForLocalManagerRpc(NetworkIdentity gameManagerIdentity, INetworkPlayer player)
+        {
+            gameManagerIdentity.AssignClientAuthority(player);
         }
     }
 }
