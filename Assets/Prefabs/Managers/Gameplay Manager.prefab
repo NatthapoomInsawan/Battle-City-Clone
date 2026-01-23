@@ -32,6 +32,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7538053386811199672}
+  - {fileID: 6209927381469858254}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8088127278328527984
@@ -53,8 +54,10 @@ MonoBehaviour:
     Interval: 0.1
   gameplayNetworkManager: {fileID: 0}
   gameplayStateManager: {fileID: 1007335422401216826}
+  gameplayPlayerManager: {fileID: 8751747527506433867}
+  uiManager: {fileID: 0}
   maxPlayers: 2
-  requestRestartPlayer: 0
+  readyPlayerIds: 
 --- !u!114 &3969326634479864813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,6 +81,55 @@ MonoBehaviour:
   ServerObjectManager: {fileID: 0}
   ClientObjectManager: {fileID: 0}
   _hasSpawned: 0
+--- !u!1 &8590553379566211117
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6209927381469858254}
+  - component: {fileID: 8751747527506433867}
+  m_Layer: 0
+  m_Name: Gameplay Player Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6209927381469858254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8590553379566211117}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6228204481519139493}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8751747527506433867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8590553379566211117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f22358e5d8ca97b4aad68de00a331097, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Client: {fileID: 0}
+  Server: {fileID: 0}
+  ServerObjectManager: {fileID: 0}
+  spawnArea: {fileID: 0}
+  playerPrefab: {fileID: 6668152780822802398, guid: bdec892cdb20caa448ab68ba01d5e4b7, type: 3}
 --- !u!1001 &2182814967581931592
 PrefabInstance:
   m_ObjectHideFlags: 0

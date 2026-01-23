@@ -12,10 +12,15 @@ namespace BattleCityClone.Gameplay.Manager
 
         public GameplayNetworkManager GameplayNetworkManager => gameplayNetworkManager;
         public GameplayStateManager GameplayStateManager => gameplayStateManager;
+        public GameplayPlayerManager GameplayPlayerManager => gameplayPlayerManager;
 
         [Header("Network")]
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
         [SerializeField] private GameplayStateManager gameplayStateManager;
+        [SerializeField] private GameplayPlayerManager gameplayPlayerManager;
+
+        [Header("References")]
+        [SerializeField] private UIManager uiManager;
 
         [Header("Settings")]
         [SerializeField] private int maxPlayers = 2;
@@ -44,8 +49,10 @@ namespace BattleCityClone.Gameplay.Manager
         {
             try
             {
+                gameplayPlayerManager.Init();
+                gameplayNetworkManager.Init();
+                uiManager.Init();
                 gameplayStateManager.Init();
-                await gameplayNetworkManager.Init();
             }
             catch (Exception e)
             {
@@ -53,13 +60,16 @@ namespace BattleCityClone.Gameplay.Manager
                 return;
             }
 
-            Debug.Log("GameplayManager initialized.");
+            gameplayNetworkManager.Server.Started.AddListener(OnServerStarted);
 
-            if (gameplayNetworkManager.Server.IsHost)
-            {
-                await UniTask.WaitUntil(() => gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
-                StartGame().Forget();
-            }
+            Debug.Log("GameplayManager initialized.");
+        }
+
+        private async void OnServerStarted()
+        {
+            Debug.Log("Server has started..");
+            await UniTask.WaitUntil(() => gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
+            StartGame().Forget();
         }
 
         private async UniTaskVoid StartGame()

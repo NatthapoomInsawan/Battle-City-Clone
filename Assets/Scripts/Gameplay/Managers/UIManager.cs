@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
 {
-    public class UIManager : MonoBehaviour
+    public class UIManager : MonoBehaviour, IInitializable
     {
         [Header("UI references")]
         [SerializeField] private List<BaseUI> uis = new();
 
-        private void Start()
+        public void Init()
         {
             foreach (var ui in uis)
                 ui.Init();

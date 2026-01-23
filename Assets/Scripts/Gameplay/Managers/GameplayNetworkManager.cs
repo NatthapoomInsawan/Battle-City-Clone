@@ -7,6 +7,7 @@ namespace BattleCityClone.Gameplay.Manager
     public class GameplayNetworkManager : NetworkManager
     {
         public INetworkPlayer LocalPlayer => localPlayer;
+        public PlayerInfo LocalPlayerInfo => localPlayerInfo;
 
         public int AuthenticatedPlayer => authenticatedPlayer;
 
@@ -18,25 +19,22 @@ namespace BattleCityClone.Gameplay.Manager
 
         private INetworkPlayer localPlayer;
 
-        private void Awake()
+        private PlayerInfo localPlayerInfo;
+
+        public void Init()
         {
-            Server.Started.AddListener(OnServerStarted);
             Server.Authenticated.AddListener(OnAuthenticated);
             Client.Connected.AddListener(OnConnected);
             Client.Disconnected.AddListener(OnDisconnected);
         }
 
-        public async UniTask Init()
+        public async UniTask ConnectToServer(PlayerInfo playerInfo)
         {
+            localPlayerInfo = playerInfo;
             Client.Connect(address, port);
-
+            
             if (await UniTask.WaitUntil(() => Client.IsConnected).SuppressCancellationThrow())
                 return;
-        }
-
-        private void OnServerStarted()
-        {
-            Debug.Log("Server has started..");
         }
 
         private async void OnAuthenticated(INetworkPlayer player)

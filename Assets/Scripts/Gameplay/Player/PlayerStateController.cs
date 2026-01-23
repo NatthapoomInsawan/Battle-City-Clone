@@ -9,6 +9,7 @@ namespace BattleCityClone.Gameplay.Player
     {
         public event Action<PlayerState> OnPlayerStateChanged;
         public PlayerState CurrentState => currentState;
+        public PlayerInfo PlayerInfo { get; set; }
 
         [Header("Player Settings")]
         [SerializeField] private int maxHealth = 100;

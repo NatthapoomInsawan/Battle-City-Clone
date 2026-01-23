@@ -1,7 +1,7 @@
 using BattleCityClone.Gameplay.Manager;
-using BattleCityClone.UI;
+using BattleCityClone.Gameplay;
 
-namespace BattleCityClone.Gameplay
+namespace BattleCityClone.UI
 {
     public class GameplayPanel : BaseUI
     {
