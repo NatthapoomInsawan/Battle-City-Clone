@@ -77,31 +77,25 @@ namespace BattleCityClone.Gameplay.Manager
             if (!IsServer)
                 RequestRestartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
             else
-            {
-                if (readyPlayerIds.Contains(gameplayNetworkManager.LocalPlayer.Identity.NetId))
-                    return;
-                else
-                    readyPlayerIds.Add(gameplayNetworkManager.LocalPlayer.Identity.NetId);
-            }
+                AddReadyPlayer(gameplayNetworkManager.LocalPlayer.Identity.NetId);
         }
 
         public void RequestCancelRestartGame()
         {
-
             if (!IsServer)
                 RequestCancelStartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
             else
-            {
-                if (!readyPlayerIds.Contains(gameplayNetworkManager.LocalPlayer.Identity.NetId))
-                    return;
-                else
-                    readyPlayerIds.Remove(gameplayNetworkManager.LocalPlayer.Identity.NetId);
-            }
+                RemoveReadyPlayer(gameplayNetworkManager.LocalPlayer.Identity.NetId);
         }
 
 
         [ServerRpc]
-        private void RequestRestartGameRpc(uint netId)
+        private void RequestRestartGameRpc(uint netId) => AddReadyPlayer(netId);
+
+        [ServerRpc]
+        private void RequestCancelStartGameRpc(uint netId) => RemoveReadyPlayer(netId);
+
+        private void AddReadyPlayer(uint netId)
         {
             if (readyPlayerIds.Contains(netId))
                 return;
@@ -109,13 +103,13 @@ namespace BattleCityClone.Gameplay.Manager
                 readyPlayerIds.Add(netId);
         }
 
-        [ServerRpc]
-        private void RequestCancelStartGameRpc(uint netId)
+        private void RemoveReadyPlayer(uint netId)
         {
             if (!readyPlayerIds.Contains(netId))
                 return;
             else
-                readyPlayerIds.Add(netId);
+                readyPlayerIds.Remove(netId);
         }
+
     }
 }
