@@ -1,5 +1,5 @@
+using BattleCityClone.Gameplay;
 using BattleCityClone.Gameplay.Manager;
-using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +16,9 @@ namespace BattleCityClone.UI
         public override void Init()
         {
             Open();
+
+            GameplayManager.Instance.GameplayStateManager.OnStateChanged += OnGameplayStateChange;
+
             connectButton.onClick.AddListener(async () =>
             {
                 connectButton.interactable = false;
@@ -32,5 +35,20 @@ namespace BattleCityClone.UI
             });
         }
 
+        public override void Open()
+        {
+            buttonText.text = "CONNECT";
+            connectButton.interactable = true;
+
+            base.Open();
+        }
+
+        private void OnGameplayStateChange(GameplayState gameplayState)
+        {
+            if (gameplayState is not GameplayWaitForPlayerState || GameplayManager.Instance.IsServer)
+                return;
+
+            Open();
+        }
     }
 }

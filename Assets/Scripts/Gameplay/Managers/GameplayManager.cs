@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Mirage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
@@ -42,10 +43,10 @@ namespace BattleCityClone.Gameplay.Manager
         private void Start()
         {
             Debug.Log("Game Manager Init");
-            Init().Forget();
+            Init();
         }
 
-        private async UniTaskVoid Init()
+        private void Init()
         {
             try
             {
@@ -61,6 +62,9 @@ namespace BattleCityClone.Gameplay.Manager
             }
 
             gameplayNetworkManager.Server.Started.AddListener(OnServerStarted);
+            gameplayNetworkManager.Server.Disconnected.AddListener(OnServerDisconnected);
+            gameplayNetworkManager.Server.OnStopHost.AddListener(OnStoppedHost);
+            gameplayNetworkManager.Client.Disconnected.AddListener(OnClientDisconnected);
 
             Debug.Log("GameplayManager initialized.");
         }
@@ -71,6 +75,20 @@ namespace BattleCityClone.Gameplay.Manager
             await UniTask.WaitUntil(() => gameplayNetworkManager.AuthenticatedPlayer == maxPlayers);
             StartGame().Forget();
         }
+
+        private void OnServerDisconnected(INetworkPlayer player)
+        {
+            if (gameplayNetworkManager.Server.AllPlayers.Count() == 1)
+                gameplayStateManager.SetState(new GameplayWaitForPlayerState());
+        }
+
+        private void OnStoppedHost() => gameplayStateManager.SetState(new GameplayWaitForPlayerState());
+        private void OnClientDisconnected(ClientStoppedReason reason) 
+        {
+            if (reason == ClientStoppedReason.RemoteConnectionClosed)
+                gameplayStateManager.SetState(new GameplayWaitForPlayerState());
+        }
+
 
         private async UniTaskVoid StartGame()
         {
@@ -119,6 +137,15 @@ namespace BattleCityClone.Gameplay.Manager
                 return;
             else
                 readyPlayerIds.Remove(netId);
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (IsServer)
+                gameplayNetworkManager.Server.Stop();
+
+            if (gameplayNetworkManager.LocalPlayer != null && gameplayNetworkManager.LocalPlayer.IsConnected)
+                gameplayNetworkManager.LocalPlayer.Disconnect();
         }
 
     }

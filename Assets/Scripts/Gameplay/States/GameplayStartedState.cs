@@ -16,6 +16,9 @@ namespace BattleCityClone.Gameplay
 
             await UniTask.WaitUntil(() => GameplayManager.Instance.GameplayNetworkManager.Server.AllPlayers.Count(player => player.Identity.gameObject.activeSelf) == 1);
 
+            if (GameplayManager.Instance.GameplayNetworkManager.Server.AllPlayers.Count() == 1)
+                return;
+
             ExitState();
         }
 
