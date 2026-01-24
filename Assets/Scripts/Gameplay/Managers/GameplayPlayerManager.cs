@@ -53,6 +53,10 @@ namespace BattleCityClone.Gameplay.Manager
             playerObject.PlayerInfo = info;
             players.Add(player);
 
+            if (player.IsHost)
+                playerObject.GetComponentInChildren<SpriteRenderer>().color = Color.yellow;
+
+
             ServerObjectManager.AddCharacter(player, playerObject.Identity);
         }
 

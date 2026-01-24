@@ -3,6 +3,7 @@ using BattleCityClone.Gameplay.Player;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace BattleCityClone.Gameplay
 {
@@ -11,6 +12,8 @@ namespace BattleCityClone.Gameplay
     {
         public override async void EnterState()
         {
+            GameplayManager.Instance.GameplayNetworkManager.LocalPlayer.Identity.GetComponentInChildren<SpriteRenderer>().color = Color.yellow;
+
             foreach (var player in GameplayManager.Instance.GameplayNetworkManager.Server.AllPlayers)
                 player.Identity.gameObject.GetComponent<PlayerStateController>().Init();
 

@@ -11,6 +11,9 @@ namespace BattleCityClone.Gameplay.Player
         public PlayerState CurrentState => currentState;
         public PlayerInfo PlayerInfo { get; set; }
 
+        [Header("References")]
+        [SerializeField] private PlayerAnimationController playerAnimationController;
+
         [Header("Player Settings")]
         [SerializeField] private int maxHealth = 100;
         [SyncVar, SerializeField] private int currentHealth;
@@ -80,7 +83,7 @@ namespace BattleCityClone.Gameplay.Player
             switch (state)
             {
                 case PlayerInvincibleState playerInvincibleState:
-                    playerInvincibleState.Init(invincibleDuration, this);
+                    playerInvincibleState.Init(invincibleDuration, playerAnimationController);
                     break;
                 case PlayerDeadState playerDeadState:
                     playerDeadState.Init(gameObject);
