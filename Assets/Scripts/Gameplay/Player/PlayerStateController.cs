@@ -23,6 +23,9 @@ namespace BattleCityClone.Gameplay.Player
         [Header("State Settings")]
         [SerializeField] float invincibleDuration = 3f;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource hitAudioSource;
+
         [SerializeReference] private PlayerState currentState;
 
         [SerializeField, SyncVar] private PlayerInfo playerInfo;
@@ -56,6 +59,7 @@ namespace BattleCityClone.Gameplay.Player
             SetState(new PlayerInvincibleState());
 
             OnHealthChanged?.Invoke(currentHealth);
+            hitAudioSource.Play();
 
             if (currentHealth <= 0 && IsServer)
                 SetState(new PlayerDeadState());
@@ -107,6 +111,7 @@ namespace BattleCityClone.Gameplay.Player
         private void OnHealthChangedSync(int newHealth)
         {
             currentHealth = newHealth;
+            hitAudioSource.Play();
             OnHealthChanged?.Invoke(currentHealth);
         }
 

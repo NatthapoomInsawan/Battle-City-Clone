@@ -21,6 +21,9 @@ namespace BattleCityClone.Gameplay.Player
         [Header("Settings")]
         [SerializeField] private float shootCooldownInSeconds = 0.5f;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource shootAudioSource;
+
         private bool canShoot = true;
 
         private PlayerInputAction playerInputAction;
@@ -60,6 +63,7 @@ namespace BattleCityClone.Gameplay.Player
             canShoot = false;
 
             SpawnShootBulletRpc(NetId);
+            shootAudioSource.Play();
 
             await UniTask.Delay(System.TimeSpan.FromSeconds(shootCooldownInSeconds));
 
