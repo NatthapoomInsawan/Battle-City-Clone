@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
 {
+    [System.Serializable]
     public struct PlayerInfo
     {
         public string Name;
@@ -22,6 +23,7 @@ namespace BattleCityClone.Gameplay.Manager
 
         [Header("Prefabs")]
         [SerializeField] private PlayerStateController playerPrefab;
+        [SerializeField] private GameplayRpcManager gameplayRpcManagerPrefab;
 
         [Header("Settings")]
         [SerializeField] private int maxSpawnAttempt = 15;
@@ -56,7 +58,9 @@ namespace BattleCityClone.Gameplay.Manager
             if (player.IsHost)
                 playerObject.GetComponentInChildren<SpriteRenderer>().color = Color.yellow;
 
+            GameplayRpcManager gameplayRpcManager = Instantiate(gameplayRpcManagerPrefab);
 
+            ServerObjectManager.Spawn(gameplayRpcManager.Identity, player);
             ServerObjectManager.AddCharacter(player, playerObject.Identity);
         }
 

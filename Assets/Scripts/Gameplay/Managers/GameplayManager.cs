@@ -3,22 +3,26 @@ using Mirage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BattleCityClone.Gameplay.Manager
 {
     public class GameplayManager : NetworkBehaviour
     {
+        public event Action<INetworkPlayer> OnPlayerDisconnected;
         public static GameplayManager Instance { get; private set; }
 
         public GameplayNetworkManager GameplayNetworkManager => gameplayNetworkManager;
         public GameplayStateManager GameplayStateManager => gameplayStateManager;
         public GameplayPlayerManager GameplayPlayerManager => gameplayPlayerManager;
+        public GameplayRpcManager GameplayRpcManager => gameplayRpcManager;
 
         [Header("Network")]
         [SerializeField] private GameplayNetworkManager gameplayNetworkManager;
         [SerializeField] private GameplayStateManager gameplayStateManager;
         [SerializeField] private GameplayPlayerManager gameplayPlayerManager;
+        [SerializeField] private GameplayRpcManager gameplayRpcManager;
 
         [Header("References")]
         [SerializeField] private UIManager uiManager;
@@ -28,6 +32,12 @@ namespace BattleCityClone.Gameplay.Manager
 
         [Header("States")]
         [SerializeField] private List<uint> readyPlayerIds = new();
+
+        [ContextMenu("Disconnected")]
+        private void TestDisconnected()
+        {
+            GameplayNetworkManager.LocalPlayer.Disconnect();
+        }
 
         private void Awake()
         {
@@ -43,10 +53,10 @@ namespace BattleCityClone.Gameplay.Manager
         private void Start()
         {
             Debug.Log("Game Manager Init");
-            Init();
+            Init().Forget();
         }
 
-        private void Init()
+        private async UniTaskVoid Init()
         {
             try
             {
@@ -61,12 +71,27 @@ namespace BattleCityClone.Gameplay.Manager
                 return;
             }
 
+            await UniTask.WaitUntil(() => gameplayRpcManager != null);
+
             gameplayNetworkManager.Server.Started.AddListener(OnServerStarted);
             gameplayNetworkManager.Server.Disconnected.AddListener(OnServerDisconnected);
             gameplayNetworkManager.Server.OnStopHost.AddListener(OnStoppedHost);
             gameplayNetworkManager.Client.Disconnected.AddListener(OnClientDisconnected);
 
             Debug.Log("GameplayManager initialized.");
+        }
+
+        public void AssignRpcManager(GameplayRpcManager rpcManager)
+        {
+            gameplayRpcManager = rpcManager;
+            BindRpcManagerEvent(rpcManager);
+        }
+
+        public void BindRpcManagerEvent(GameplayRpcManager rpcManager)
+        {
+            rpcManager.OnPlayerDisconnectedEvent += InvokePlayerDisconnected;
+            rpcManager.OnrequestStartEvent += AddReadyPlayer;
+            rpcManager.OnRequestCancelStartEvent += RemoveReadyPlayer;
         }
 
         private async void OnServerStarted()
@@ -80,6 +105,10 @@ namespace BattleCityClone.Gameplay.Manager
         {
             if (gameplayNetworkManager.Server.AllPlayers.Count() == 1)
                 gameplayStateManager.SetState(new GameplayWaitForPlayerState());
+
+            Debug.Log($"Player Disconnected: {player.Identity.NetId}");
+
+            gameplayRpcManager.PlayerDisconnectedRpc(player);
         }
 
         private void OnStoppedHost() => gameplayStateManager.SetState(new GameplayWaitForPlayerState());
@@ -95,7 +124,7 @@ namespace BattleCityClone.Gameplay.Manager
             readyPlayerIds.Clear();
             gameplayStateManager.SetState(new GameplayStartedState());
 
-            await UniTask.WaitUntil(() => gameplayStateManager.CurrentState is GameplayOverState && readyPlayerIds.Count == maxPlayers);
+            await UniTask.WaitUntil(() => gameplayStateManager.CurrentState is GameplayOverState && readyPlayerIds.Count == gameplayNetworkManager.Server.AllPlayers.Count());
             
             StartGame().Forget();
         }
@@ -103,7 +132,7 @@ namespace BattleCityClone.Gameplay.Manager
         public void RequestRestartGame()
         {
             if (!IsServer)
-                RequestRestartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+                gameplayRpcManager.RequestRestartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
             else
                 AddReadyPlayer(gameplayNetworkManager.LocalPlayer.Identity.NetId);
         }
@@ -111,17 +140,10 @@ namespace BattleCityClone.Gameplay.Manager
         public void RequestCancelRestartGame()
         {
             if (!IsServer)
-                RequestCancelStartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
+                gameplayRpcManager.RequestCancelStartGameRpc(gameplayNetworkManager.LocalPlayer.Identity.NetId);
             else
                 RemoveReadyPlayer(gameplayNetworkManager.LocalPlayer.Identity.NetId);
         }
-
-
-        [ServerRpc]
-        private void RequestRestartGameRpc(uint netId) => AddReadyPlayer(netId);
-
-        [ServerRpc]
-        private void RequestCancelStartGameRpc(uint netId) => RemoveReadyPlayer(netId);
 
         private void AddReadyPlayer(uint netId)
         {
@@ -139,6 +161,8 @@ namespace BattleCityClone.Gameplay.Manager
                 readyPlayerIds.Remove(netId);
         }
 
+        private void InvokePlayerDisconnected(INetworkPlayer networkPlayer) => OnPlayerDisconnected?.Invoke(networkPlayer);
+
         private void OnApplicationQuit()
         {
             if (IsServer)
@@ -147,6 +171,5 @@ namespace BattleCityClone.Gameplay.Manager
             if (gameplayNetworkManager.LocalPlayer != null && gameplayNetworkManager.LocalPlayer.IsConnected)
                 gameplayNetworkManager.LocalPlayer.Disconnect();
         }
-
     }
 }

@@ -2,6 +2,6 @@ namespace BattleCityClone.Gameplay
 {
     public class GameplayOverState : GameplayState
     {
-        public override GameplayState GetNextState() => new GameplayStartedState();
+        public override GameplayState GetNextState() => null;
     }
 }

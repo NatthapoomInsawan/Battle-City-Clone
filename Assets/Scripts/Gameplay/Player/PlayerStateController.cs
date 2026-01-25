@@ -1,4 +1,5 @@
 using BattleCityClone.Gameplay.Manager;
+using Cysharp.Threading.Tasks;
 using Mirage;
 using System;
 using UnityEngine;
@@ -8,25 +9,35 @@ namespace BattleCityClone.Gameplay.Player
     public class PlayerStateController : NetworkBehaviour, IDamagable
     {
         public event Action<PlayerState> OnPlayerStateChanged;
+        public event Action<int> OnHealthChanged;
         public PlayerState CurrentState => currentState;
-        public PlayerInfo PlayerInfo { get; set; }
+        public PlayerInfo PlayerInfo { get => playerInfo; set { playerInfo = value; } }
+        public int CurrentHealth => currentHealth;
 
         [Header("References")]
         [SerializeField] private PlayerAnimationController playerAnimationController;
 
         [Header("Player Settings")]
         [SerializeField] private int maxHealth = 100;
-        [SyncVar, SerializeField] private int currentHealth;
-
+        [SyncVar(hook = nameof(OnHealthChangedSync)), SerializeField] private int currentHealth;
         [Header("State Settings")]
         [SerializeField] float invincibleDuration = 3f;
 
         [SerializeReference] private PlayerState currentState;
 
-        private void Start()
+        [SerializeField, SyncVar] private PlayerInfo playerInfo;
+
+        private void Awake()
         {
-            if (!IsServer)
-                RequestAuthorityForLocalManagerRpc(GameplayManager.Instance.Identity, Identity.Client.Player);
+            Identity.OnAuthorityChanged.AddListener(OnStartAuthority);
+        }
+
+        private async void OnStartAuthority(bool changed)
+        {
+            await UniTask.WaitUntil(()=> GameplayManager.Instance.GameplayRpcManager != null);
+
+            if (changed)
+                RequestAuthorityForLocalManagerRpc(GameplayManager.Instance.GameplayRpcManager.Identity, GameplayManager.Instance.GameplayNetworkManager.Client.Player);
         }
 
         public void Init()
@@ -43,6 +54,8 @@ namespace BattleCityClone.Gameplay.Player
             currentHealth -= damageAmount;
             currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
             SetState(new PlayerInvincibleState());
+
+            OnHealthChanged?.Invoke(currentHealth);
 
             if (currentHealth <= 0 && IsServer)
                 SetState(new PlayerDeadState());
@@ -90,6 +103,13 @@ namespace BattleCityClone.Gameplay.Player
                     break;
             }
         }
+
+        private void OnHealthChangedSync(int newHealth)
+        {
+            currentHealth = newHealth;
+            OnHealthChanged?.Invoke(currentHealth);
+        }
+
 
         [ClientRpc(excludeHost = true)]
         private void SendClientStateRpc(PlayerState newState)
